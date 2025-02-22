@@ -1,0 +1,33 @@
+{
+  "puzzles": [
+    {
+      "id": 1,
+      "fen": "r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1",
+      "solution": ["Bc5+", "Kxc5", "Qb6+", "Kd5", "Qd6#"],
+      "difficulty": "medium",
+      "description": "Napoleon I vs Madame de Remusat - Checkmate in 3 moves."
+    },
+    {
+      "id": 2,
+      "fen": "r3k2r/ppp2Npp/1b5n/4p2b/2B1P2q/BQP2P2/P5PP/RN5K w kq - 1 1",
+      "solution": ["Bb5+", "c6", "Qe6+", "Qe7", "Qxe7#"],
+      "difficulty": "hard",
+      "description": "William Evans vs Alexander MacDonnell (1826) - Checkmate in 3 moves."
+    },
+    {
+      "id": 3,
+      "fen": "r1b3kr/ppp1Bp1p/1b6/n2P4/2p3q1/2Q2N2/P4PPP/RN2R1K1 w - - 1 1",
+      "solution": ["Qxh8+", "Kxh8", "Bf6+", "Kg8", "Re8#"],
+      "difficulty": "hard",
+      "description": "William Evans vs Alexander MacDonnell (1829) - Checkmate in 3 moves."
+    },
+    {
+      "id": 4,
+      "fen": "r2n1rk1/1ppb2pp/1p1p4/3Ppq1n/2B3P1/2P4P/PP1N1P1K/R2Q1RN1 b - - 0 1",
+      "solution": ["Qxf2+", "Rxf2", "Rxf2+", "Kh1", "Ng3#"],
+      "difficulty": "expert",
+      "description": "H. Popert vs John Cochrane (1841) - Checkmate in 3 moves."
+    }
+  ]
+}
+

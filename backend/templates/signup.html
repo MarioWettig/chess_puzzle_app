@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Sign Up - ChessPop</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1E1E2F;
+            color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #2C2B30;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Home Icon Styling */
+        .home-icon {
+            font-size: 24px;
+            text-decoration: none;
+            color: #F58F7C; /* Coral */
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background 0.3s ease-in-out;
+            margin-left: 10px;
+        }
+
+        .home-icon:hover {
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Signup Container */
+        .signup-container {
+            background-color: #2C2B30;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+            width: 350px;
+            text-align: center;
+        }
+
+        .signup-container h2 {
+            color: #F2C4CE;
+            margin-bottom: 20px;
+        }
+
+        /* Input Fields */
+        .signup-container input {
+            width: calc(100% - 20px);
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            background-color: #1E1E2F;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            text-align: center;
+        }
+
+        .signup-container input::placeholder {
+            color: #BBB;
+        }
+
+        /* Buttons */
+        .button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .button-signup {
+            background-color: #3C8DAD;
+            color: white;
+        }
+
+        .button-signup:hover {
+            background-color: #63A4C2;
+        }
+
+        .button-login {
+            background-color: transparent;
+            color: #F58F7C;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .button-login:hover {
+            color: #FF8A80;
+        }
+
+        /* Error Message */
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <a href="/" class="home-icon">🏠</a>
+    </div>
+
+    <!-- Signup Form -->
+    <div class="signup-container">
+        <h2>Create an Account</h2>
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
+        {% endif %}
+        <form action="/signup" method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+            <button type="submit" class="button button-signup">Sign Up</button>
+        </form>
+        <a href="/login" class="button button-login">Log in</a>
+    </div>
+
+</body>
+</html>
+

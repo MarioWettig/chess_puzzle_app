@@ -1,0 +1,20 @@
+body {
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    margin-top: 20px;
+}
+
+#board {
+    margin: 20px auto;
+}
+
+
+.image-placeholder img {
+    max-width: 20%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}

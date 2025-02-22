@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Chess Learning App</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1E1E2F;
+            color: #FFFFFF;
+        }
+
+                /* Header */
+        .header {
+            position: relative;
+            top: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #2C2B30;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Home Icon Styling */
+        .home-icon {
+            font-size: 24px;
+            text-decoration: none;
+            color: #F58F7C;
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background 0.3s ease-in-out;
+            margin-left: 10px; /* Move it slightly right */
+        }
+
+        /* Hover Effect */
+        .home-icon:hover {
+            background-color: rgba(255, 255, 255, 0.7); /* Slightly brighter on hover */
+        }
+
+
+        /* Welcome Text */
+        .welcome-text {
+            text-align: center;
+            font-size: 3vw;
+            margin: 30px 20px;
+            color: #F2C4CE;
+        }
+
+        /* Buttons Container */
+        .button-container {
+            text-align: center;
+            margin: 30px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            color: white; /* Default text color */
+        }
+
+        /* Button Styles */
+        .button-login {
+            background-color: #F58F7C;
+            border: 2px solid #FFFFFF; /* White border */
+        }
+
+        .button-login:hover {
+            background-color: #FF8A80;
+        }
+
+        .button-signup {
+            background-color: #4F4F51;
+            border: 2px solid #FFFFFF;
+        }
+
+        .button-signup:hover {
+            background-color: #6F6F71;
+        }
+
+        .button-guest {
+            background-color: #3C8DAD;
+            border: 2px solid #FFFFFF;
+        }
+
+        .button-guest:hover {
+            background-color: #63A4C2;
+        }
+
+        /* Image Section */
+        .image-placeholder {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .image-placeholder img {
+        max-width: 60%;
+        height: auto;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <a href="/" class="home-icon">🏠</a>
+    </div>
+
+    <!-- Welcome Text -->
+    <h1 class="welcome-text">Welcome to the ChessPop!</h1>
+
+    <!-- Buttons -->
+    <div class="button-container">
+        <a href="/login" class="button button-login">Login</a>
+        <a href="/signup" class="button button-signup">Sign Up</a>
+        <a href="/chessboard" class="button button-guest">Play as Guest</a>
+    </div>
+
+    <!-- Image Placeholder -->
+    <div class="image-placeholder">
+        <div class="image-container">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Chess Learning App Logo" style="max-width: 20%; height: auto; display: block; margin: 0 auto;">
+        </div>
+    </div>
+
+
+</body>
+</html>
+
+
+
+

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Chess Board</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+
+    <!-- Chessboard.js & jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.min.js"></script>
+
+    <!-- JavaScript for Board Interaction -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1E1E2F;
+            color: #FFFFFF;
+        }
+
+        /* Header */
+                .header {
+            position: relative;
+            top: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #2C2B30;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Home Icon Styling */
+        .home-icon {
+            font-size: 24px;
+            text-decoration: none;
+            color: #F58F7C;
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background 0.3s ease-in-out;
+            margin-left: 10px;
+        }
+
+        /* Hover Effect */
+        .home-icon:hover {
+            background-color: rgba(255, 255, 255, 0.7); /* brighter on hover */
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1vw;
+            color: #F2C4CE;
+        }
+
+        /* Chessboard Container */
+        #board {
+            margin: 20px auto;
+            width: 90vw; /* Responsive width */
+            max-width: 600px; /* Maximum size for larger screens */
+            height: 90vw; /* Ensure it's a square */
+            max-height: 600px;
+        }
+
+        /* Placeholder Buttons */
+        .button-container {
+        display: flex;
+        justify-content: space-between; /* Spread buttons evenly */
+        align-items: center;
+        width: 90vw; /* Match board width */
+        max-width: 600px; /* Same as board max width */
+        margin: 20px auto; /* Center the container */
+        gap: 15px; /* Space between buttons */
+    }
+
+        /* Timer Styling */
+        .timer-text {
+        font-size: 18px;
+        font-weight: bold;
+        color: #F2C4CE;
+        margin: auto;
+        }
+
+        /* Button Styles */
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+        }
+
+
+        .button-undo {
+            background-color: #4F4F51;
+        }
+
+        .button-hint {
+            background-color: #3C8DAD;
+        }
+
+        .button-next {
+            background-color: #00A86B;
+            flex: 3;
+            padding: 12px 40px;
+        }
+
+        .button:hover {
+            opacity: 0.6;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <a href="/" class="home-icon">🏠</a>
+    </div>
+
+     <!-- Chessboard -->
+    <h1></h1>
+    <div class="puzzle-info"></div>
+    <div id="board"></div>
+
+    <p id="result-message"></p>
+    <!-- Buttons + Timer -->
+    <div class="button-container">
+        <p class="timer-text"><span id="timer">00:00</span>
+        <button class="button button-undo" onclick="undoMove()">Undo</button>
+        <button class="button button-hint" onclick="showHint()">Hint</button>
+        <button class="button button-next" onclick="loadPuzzle()">Next</button>
+    </div>
+
+
+</body>
+</html>
+
