@@ -83,6 +83,8 @@ function loadPuzzle() {
             currentSolution = [...data.solution];
             moveHistory = [];
             puzzleID = data.id;
+            inaccurateMoves = 0;
+            hintsUsed = 0;
 
             // console.log("processed :", currentSolution);
             // console.log("processed moveHistory :", moveHistory);
@@ -212,49 +214,49 @@ function onDrop(source, target) {
 
     // if solved
     if (moveHistory.length === currentSolution.length) {
-    console.log(" Puzzle solved!");
-    stopTimer();
+        console.log(" Puzzle solved!");
+        stopTimer();
 
-    let timeTaken = secondsElapsed;
-    let wrongMoves = inaccurateMoves;
-    let hints = hintsUsed;
-    let puzzleId = puzzleID;
-
-
-    let resultMessage = document.getElementById('result-message');
-    resultMessage.innerHTML = "<span style='font-weight: bold; font-size: 18px; color: green;'>✅ Puzzle solved!</span>";
-
-    // Force final board update and clear selection
-    setTimeout(() => {
-        board.position(game.fen());
-        board.resize(); // Fixes visual glitches
-    }, 300);
+        let timeTaken = secondsElapsed;
+        let wrongMoves = inaccurateMoves;
+        let hints = hintsUsed;
+        let puzzleId = puzzleID;
 
 
-    fetch('/submit_puzzle_result', {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            puzzle_id: puzzleId,
-            time_taken: timeTaken,
-            number_wrong_moves: wrongMoves,
-            hints_used: hints,
-            solved: true
+        let resultMessage = document.getElementById('result-message');
+        resultMessage.innerHTML = "<span style='font-weight: bold; font-size: 18px; color: green;'>✅ Puzzle solved!</span>";
+
+        // Force final board update and clear selection
+        setTimeout(() => {
+            board.position(game.fen());
+            board.resize(); // Fixes visual glitches
+        }, 300);
+
+
+        fetch('/submit_puzzle_result', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                puzzle_id: puzzleId,
+                time_taken: timeTaken,
+                number_wrong_moves: wrongMoves,
+                hints_used: hints,
+                solved: true
+            })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("📌 Rating Update:", data);
-        alert(`New Rating: ${data.new_rating} (Change: ${data.rating_change})`);
-    })
-    .catch(error => console.error("❌ Error submitting puzzle result:", error));
+        .then(response => response.json())
+        .then(data => {
+            console.log("📌 Rating Update:", data);
+            alert(`New Rating: ${data.new_rating} (Change: ${data.rating_change})`);
+        })
+        .catch(error => console.error("❌ Error submitting puzzle result:", error));
 
-    // Show "Next" button
-    document.querySelector('.button-next').style.display = "inline-block";
+        // Show "Next" button
+        document.querySelector('.button-next').style.display = "inline-block";
 
-    return;
+        return;
     }
 }
 

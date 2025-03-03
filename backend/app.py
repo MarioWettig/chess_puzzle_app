@@ -147,15 +147,17 @@ def submit_puzzle_result():
     # Calculate expected score (ELO system)
     expected = 1 / (1 + 10 ** ((puzzle.rating - user.rating) / 400))
 
+    print("time_taken: ", time_taken, ". Number wrong moves: ", number_wrong_moves, ". Hints used: ", hints_used, ". Solved: ", solved)
+
     if solved:
-        if time_taken < 45 and number_wrong_moves == 0 and hints_used == 0:
+        if time_taken < 35 and number_wrong_moves == 0 and hints_used == 0:
             actual = 1.0   #  Perfect solve: fast, no mistakes, no hints
-        elif time_taken < 75 and number_wrong_moves <= 1 and hints_used <= 1:
+        elif time_taken < 55 and number_wrong_moves <= 1 and hints_used <= 1:
             actual = 0.8   #  Good solve: decent time, minor errors, at most 1 hint
         elif hints_used > 2:
             actual = 0.3   #  Solved but used too many hints
         else:
-            actual = 0.5   # ️ Average solve
+            actual = 0.45   # ️ Average solve
     else:
         actual = 0.0       #  Failed to solve
 
