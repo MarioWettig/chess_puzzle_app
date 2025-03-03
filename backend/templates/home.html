@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="{{ url_for('static', filename='js/toggle.js') }}"></script>
     <title>Chess Learning App</title>
     <style>
         /* General Styles */
@@ -19,6 +20,7 @@
             width: 100%;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 10px 20px;
             background-color: #2C2B30;
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
@@ -111,6 +113,65 @@
         height: auto;
         }
 
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between label and switch */
+            margin-right: 30px; /* Move away from the right edge */
+        }
+
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #4caf50;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(14px);
+        }
+
+        .toggle-label {
+            font-size: 14px;
+            color: #FFFFFF;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
@@ -118,6 +179,13 @@
     <!-- Header -->
     <div class="header">
         <a href="/" class="home-icon">🏠</a>
+        <div class="toggle-container">
+            <span class="toggle-label">Personalised</span>
+            <label class="switch">
+                <input type="checkbox" id="personalisationToggle" onclick="togglePersonalisation()">
+                <span class="slider round"></span>
+            </label>
+        </div>
     </div>
 
     <!-- Welcome Text -->

@@ -2,9 +2,12 @@ var board;
 var game = new Chess();
 var currentSolution = [];
 var moveHistory = [];
-
 var timer;
 var secondsElapsed = 0;
+
+var puzzleID;
+var inaccurateMoves = 0;
+var hintsUsed = 0;
 
 // not sure how useful the logs are, debugging i guess but they aren't in the terminal lol in the browser! ;)
 
@@ -47,10 +50,13 @@ function stopTimer() {
 
 
 function loadPuzzle() {
-    fetch('/get_puzzle')
+     let isPersonalised = localStorage.getItem("personalisation") === "true"; // Read from localStorage
+    console.log("🔄 Loading puzzle. Personalised:", isPersonalised);
+
+    fetch(`/get_puzzle?personalised=${isPersonalised}`)
         .then(response => response.json())
         .then(data => {
-            console.log(" Loaded Puzzle:", data);
+            //console.log(" Loaded Puzzle:", data);
             if (data.error) {
                 alert("Error loading puzzle: " + data.error);
                 return;
@@ -58,9 +64,9 @@ function loadPuzzle() {
 
             let isBlackToMove = data.fen.split(" ")[1] === "b";
             let playerTurn = !isBlackToMove ? "Black" : "White";
-
-            console.log(" FEN:", data.fen);
-            console.log(" Player should play as:", playerTurn);
+            //console.log(" FEN:", data.fen);
+             console.log(" Rating:", data.rating);
+            // console.log(" Player should play as:", playerTurn);
 
             // Update the board orientation based on turn
             board = Chessboard('board', {
@@ -76,13 +82,14 @@ function loadPuzzle() {
             board.position(data.fen);
             currentSolution = [...data.solution];
             moveHistory = [];
+            puzzleID = data.id;
 
-            console.log("processed :", currentSolution);
+            // console.log("processed :", currentSolution);
+            // console.log("processed moveHistory :", moveHistory);
 
             let moveCount = currentSolution.length;
             let turnIndicator = document.querySelector('.puzzle-info');
             turnIndicator.innerHTML = `<span style="font-size: 20px; font-weight: bold; color: white;">Play as ${playerTurn}. <b>${Math.ceil(moveCount/2)}</b> best move(s)!</span>`;
-
 
             document.getElementById('result-message').innerText = "";
             document.querySelector(".button-next").style.display = "none"; // Hide Next button
@@ -91,7 +98,7 @@ function loadPuzzle() {
 
             setTimeout(() => {
                 applyOpponentMove();
-                console.log("🔹 Solution After Opponent Move:", currentSolution);
+                //console.log("🔹 Solution After Opponent Move:", currentSolution);
             }, 1200);
 
             startTimer();
@@ -103,8 +110,11 @@ function loadPuzzle() {
 
 function applyOpponentMove(){
     if (currentSolution.length > 0) {
-        let firstMove = currentSolution.shift();
+        //console.log("🟡 [Before] Full Solution List:", [...currentSolution]);
+        let firstMove = currentSolution[0];
+
         console.log("♟️ Opponent's Move:", firstMove);
+        //console.log("🟢 [After] Solution List:", [...currentSolution]);
 
         let opponentMoveObj = game.move({
             from: firstMove.substring(0, 2),
@@ -126,27 +136,52 @@ function applyOpponentMove(){
 
 // move validation
 function onDrop(source, target) {
-    let userMove = game.move({
+    let move = {
         from: source,
         to: target,
-        promotion: 'q' // Auto promote to queen if needed
-    });
+        promotion: 'q'
+    };
 
-    if (!userMove) {
-        console.log(" Illegal move!");
-        highlightSquareError(target, "red");
-        //console.log(game.fen())
-        return 'snapback'; // Reset piece
+    let userMoveNotation = source + target; // Example: "e2e4"
+
+    // Ensure pawn promotions are accounted for
+    if (game.get(source).type === "p" && (target[1] === "8" || target[1] === "1")) {
+        userMoveNotation += "q";
     }
 
-    let userMoveNotation = source + target; // "e2e4"
-    console.log(" User Move :", userMoveNotation);
+    console.log("🔍 Expected Move:", currentSolution[moveHistory.length]);
+    console.log("✅ User Attempt:", userMoveNotation);
 
     if (userMoveNotation !== currentSolution[moveHistory.length]) {
-        console.log(" Incorrect move! Try again.");
+        console.log("❌ Incorrect move! Try again.");
         showError(" Incorrect move! Try again.", target);
+        inaccurateMoves++;
         return 'snapback';
     }
+
+    let userMove = game.move(move);
+
+    if (!userMove) {
+        console.log("❌ Illegal move attempted:", move);
+
+        // Get all legal moves from Chess.js
+        let legalMoves = game.moves({ verbose: true });
+
+        // Compare what you tried vs. what Chess.js expects
+        let legalMoveFormats = legalMoves.map(m => ({
+            from: m.from,
+            to: m.to,
+            promotion: m.promotion || null,
+            moveInUCI: m.san  // Standard Algebraic Notation
+        }));
+
+        console.log("🔍 Legal Moves (Verbose Format):", legalMoveFormats);
+
+        // Highlight error and reset piece
+        highlightSquareError(target, "red");
+        return 'snapback';
+    }
+
 
     moveHistory.push(userMoveNotation);
     console.log(" Correct move:", userMoveNotation);
@@ -180,6 +215,12 @@ function onDrop(source, target) {
     console.log(" Puzzle solved!");
     stopTimer();
 
+    let timeTaken = secondsElapsed;
+    let wrongMoves = inaccurateMoves;
+    let hints = hintsUsed;
+    let puzzleId = puzzleID;
+
+
     let resultMessage = document.getElementById('result-message');
     resultMessage.innerHTML = "<span style='font-weight: bold; font-size: 18px; color: green;'>✅ Puzzle solved!</span>";
 
@@ -188,6 +229,27 @@ function onDrop(source, target) {
         board.position(game.fen());
         board.resize(); // Fixes visual glitches
     }, 300);
+
+
+    fetch('/submit_puzzle_result', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            puzzle_id: puzzleId,
+            time_taken: timeTaken,
+            number_wrong_moves: wrongMoves,
+            hints_used: hints,
+            solved: true
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("📌 Rating Update:", data);
+        alert(`New Rating: ${data.new_rating} (Change: ${data.rating_change})`);
+    })
+    .catch(error => console.error("❌ Error submitting puzzle result:", error));
 
     // Show "Next" button
     document.querySelector('.button-next').style.display = "inline-block";
@@ -201,11 +263,11 @@ function showError(message, targetSquare) {
     resultMessage.innerText = message;
     resultMessage.style.color = "red";
 
-    highlightSquare(targetSquare, "red");
+    highlightSquareError(targetSquare, "red");
 
     setTimeout(() => {
         resultMessage.innerText = "";
-    }, 4000);
+    }, 3000);
 }
 
 
@@ -235,8 +297,9 @@ function undoMove() {
 }
 
 
+
 function showHint(){
-    if (moveHistory.length >= currentSolution.length) {
+    if (moveHistory.length > currentSolution.length) {
             console.log(" Puzzle already solved, no hint needed.");
             return;
         }
@@ -254,6 +317,8 @@ function showHint(){
             removeHighlight(fromSquare);
             removeHighlight(toSquare);
         }, 1500);
+
+        hintsUsed++;
 }
 
 

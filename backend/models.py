@@ -43,6 +43,8 @@ class UserPuzzle(db.Model):
     puzzle_id = db.Column(db.Integer, db.ForeignKey("puzzles.id"), nullable=False)
     time_taken = db.Column(db.Integer, nullable=False)  # Time in seconds
     number_wrong_moves = db.Column(db.Integer, default=0, nullable=False)  # Mistakes before solving
+    hints_used = db.Column(db.Integer, default=0, nullable=False)
+    rating = db.Column(db.Integer, nullable=True)
     solved = db.Column(db.Boolean, default=False)  # If the puzzle was solved correctly
     date_attempted = db.Column(db.DateTime, default=db.func.current_timestamp())  # Timestamp
     user_rating_change = db.Column(db.Integer, default=0, nullable=True)  # Rating adjustment
