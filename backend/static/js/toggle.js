@@ -14,10 +14,12 @@ function loadPersonalisationState() {
     let toggle = document.getElementById("personalisationToggle");
     let savedState = localStorage.getItem("personalisation");
 
-    if (savedState === "true") {
-        toggle.checked = true;
-    } else {
+   if (savedState === null || savedState === "true") {
+        // Force reset to false on first visit
+        localStorage.setItem("personalisation", "false");
         toggle.checked = false;
+    } else {
+        toggle.checked = savedState === "true";
     }
 }
 

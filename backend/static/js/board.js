@@ -12,10 +12,16 @@ var hintsUsed = 0;
 // not sure how useful the logs are, debugging i guess but they aren't in the terminal lol in the browser! ;)
 
 document.addEventListener("DOMContentLoaded", function () {
-    loadPuzzle();
+     loadPersonalisationState(); loadPuzzle();
+
+     localStorage.setItem("puzzleCounter", "0");
+     updatePuzzleCounter();
 });
 
-
+function updatePuzzleCounter() {
+    let counter = localStorage.getItem("puzzleCounter");
+    document.getElementById("puzzleCounter").innerText = counter;
+}
 
 function startTimer() {
     clearInterval(timer); // Reset any existing timer
@@ -26,6 +32,8 @@ function startTimer() {
         secondsElapsed++;
         updateTimerDisplay();
     }, 1000);
+
+
 }
 
 function updateTimerDisplay() {
@@ -138,6 +146,11 @@ function applyOpponentMove(){
 
 // move validation
 function onDrop(source, target) {
+    if (source === target) {
+        console.log("🔄 Piece clicked but not moved, ignoring.");
+        return;
+    }
+
     let move = {
         from: source,
         to: target,
@@ -217,6 +230,11 @@ function onDrop(source, target) {
         console.log(" Puzzle solved!");
         stopTimer();
 
+        let counter = parseInt(localStorage.getItem("puzzleCounter"), 10) || 0;
+        counter++;
+        localStorage.setItem("puzzleCounter", counter);
+        updatePuzzleCounter();
+
         let timeTaken = secondsElapsed;
         let wrongMoves = inaccurateMoves;
         let hints = hintsUsed;
@@ -233,6 +251,8 @@ function onDrop(source, target) {
         }, 300);
 
 
+
+
         fetch('/submit_puzzle_result', {
             method: "POST",
             headers: {
@@ -243,13 +263,14 @@ function onDrop(source, target) {
                 time_taken: timeTaken,
                 number_wrong_moves: wrongMoves,
                 hints_used: hints,
-                solved: true
+                solved: true,
+                personalised: localStorage.getItem("personalisation") === "true"
             })
         })
         .then(response => response.json())
         .then(data => {
             console.log("📌 Rating Update:", data);
-            alert(`New Rating: ${data.new_rating} (Change: ${data.rating_change})`);
+            //alert(`New Rating: ${data.new_rating} (Change: ${data.rating_change})`);
         })
         .catch(error => console.error("❌ Error submitting puzzle result:", error));
 
@@ -286,17 +307,45 @@ function highlightSquareError(square, color) {
 
 
 function undoMove() {
-    var lastMove =  game.undo();
-    moveHistory.pop();
+    if (moveHistory.length === 0) {
+        console.log("⚠️ No moves to undo!");
+        return;
+    }
 
-    if (lastMove) {
-        board.position(game.fen()); // Update board to reflect the undone move
-        console.log(" Move undone:", lastMove);
-        currentSolution.unshift(lastMove.san); // Put the undone move back into solution list
-    } else {
-        console.log(" No moves to undo!");
+    var lastMove = game.undo();  // Undo last move
+    if (!lastMove) return; // Safety check
+
+    moveHistory.pop(); // Remove last move from history
+    board.position(game.fen()); // Update board
+
+    console.log("🔄 Move undone:", lastMove.san);
+
+    // Check if we just undid an opponent's move (Even index = opponent move)
+    let isOpponentMove = moveHistory.length % 2 === 0;
+
+    if (isOpponentMove) {
+        console.log("♟️ Opponent move was undone. Replaying...");
+
+        setTimeout(() => {
+            let opponentMove = currentSolution[moveHistory.length]; // Next expected move
+            let opponentMoveObj = game.move({
+                from: opponentMove.substring(0, 2),
+                to: opponentMove.substring(2, 4),
+                promotion: 'q'
+            });
+
+            if (!opponentMoveObj) {
+                console.error("❌ Error replaying opponent move:", opponentMove);
+                return;
+            }
+
+            board.position(game.fen()); // Sync board
+            moveHistory.push(opponentMove); // Restore opponent move
+            console.log("♟️ Opponent replayed move:", opponentMove);
+        }, 1000); // Delay for smoother UX
     }
 }
+
 
 
 
@@ -331,6 +380,45 @@ function highlightSquare(square, color) {
 // Helper function to remove highlight
 function removeHighlight(square) {
     $(`#board .square-${square}`).css("background", "");
+}
+
+
+// Function to handle toggle switch
+function togglePersonalisation() {
+    let toggle = document.getElementById("personalisationToggle");
+    let isPersonalised = toggle.checked;
+
+    // Save to localStorage
+    localStorage.setItem("personalisation", isPersonalised ? "true" : "false");
+
+    console.log("📌 Personalisation set to:", isPersonalised);
+
+    fetch('/reset_rating', {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("🔄 User rating reset:", data);
+        loadPuzzle();  // Reload puzzle after reset
+    })
+    .catch(error => console.error("❌ Error resetting rating:", error));
+}
+
+
+function loadPersonalisationState() {
+    let toggle = document.getElementById("personalisationToggle");
+    let savedState = localStorage.getItem("personalisation");
+
+    if (savedState === null || savedState === "true") {
+        // Force reset to false on first visit
+        localStorage.setItem("personalisation", "false");
+        toggle.checked = false;
+    } else {
+        toggle.checked = savedState === "true";
+    }
 }
 
 

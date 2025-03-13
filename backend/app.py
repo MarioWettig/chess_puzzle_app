@@ -67,7 +67,7 @@ def load_personalised_puzzle(user_id):
 
         # Fetch a puzzle within ±100 rating of the user
         puzzle = Puzzle.query.filter(
-            Puzzle.rating.between(user_rating - 100, user_rating + 100)
+            Puzzle.rating.between(user_rating - 70, user_rating + 70)
         ).order_by(db.func.random()).first()
 
         if not puzzle:
@@ -134,6 +134,7 @@ def submit_puzzle_result():
     number_wrong_moves = data.get("number_wrong_moves", 0)
     hints_used = data.get("hints_used", 0)  # Get hints count
     solved = data.get("solved", False)
+    is_personalised = data.get("personalised", False)
 
     puzzle = Puzzle.query.get(puzzle_id)
     if not puzzle:
@@ -142,31 +143,56 @@ def submit_puzzle_result():
     rating_at_attempt = user.rating
 
     # --- ELO-inspired rating update ---
-    K = 40
+    K = 47
 
     # Calculate expected score (ELO system)
+    print(puzzle.rating)
     expected = 1 / (1 + 10 ** ((puzzle.rating - user.rating) / 400))
 
-    print("time_taken: ", time_taken, ". Number wrong moves: ", number_wrong_moves, ". Hints used: ", hints_used, ". Solved: ", solved)
+    total_moves = len(puzzle.solution.split(","))
+    total_user_moves = max(1, total_moves // 2)  # at least 1 (avoid division by zero)
+    hint_efficiency = hints_used / total_user_moves # 0-1 percentage of hints to moves
+    time_efficiency = time_taken / total_user_moves # time per move
+    move_efficiency = number_wrong_moves / total_user_moves # mistakes per move
+
+    print("time eff: ", time_efficiency, ". Move eff: ", move_efficiency, ". Hint eff: ", hint_efficiency, ". is Perso: ", is_personalised)
 
     if solved:
-        if time_taken < 35 and number_wrong_moves == 0 and hints_used == 0:
-            actual = 1.0   #  Perfect solve: fast, no mistakes, no hints
-        elif time_taken < 55 and number_wrong_moves <= 1 and hints_used <= 1:
-            actual = 0.8   #  Good solve: decent time, minor errors, at most 1 hint
-        elif hints_used > 2:
-            actual = 0.3   #  Solved but used too many hints
+        if hint_efficiency > 0.95:  # Used hints for almost all moves, didn't really solve it
+            actual = 0.1
+        elif time_efficiency <= 8 and move_efficiency == 0 and hint_efficiency == 0.0:
+            actual = 1.0  # Perfect solve: solved quickly with no mistakes/hints
+        elif ((time_efficiency <= 10 and move_efficiency <= 0.34) or (time_efficiency <= 15 and move_efficiency == 0.0)) and hint_efficiency == 0.0:
+            actual = 0.85  # Very good solve
+        elif time_efficiency <= 15 and move_efficiency <= 0.34 and hint_efficiency == 0.0:
+            actual = 0.75  # Good solve
+        elif time_efficiency <= 15 and move_efficiency <= 0.5 and hint_efficiency <= 0.3:
+            actual = 0.65  # Above average solve
+        elif time_efficiency <= 25 and move_efficiency <= 0.2  and hint_efficiency <= 0.3:
+            actual = 0.55  # pretty good solve, but took too long
+        elif move_efficiency <= 1.5 and hint_efficiency <= 0.3:
+            actual = 0.4  # solved but took too long, and/or made many mistakes, but didn't rely heavily too on hints
+        elif move_efficiency <= 1 and 0.5 < hint_efficiency < 0.7:
+            actual = 0.35
+        elif move_efficiency <= 1 and 0.7 < hint_efficiency < 0.8:
+            actual = 0.25  # Solved but used way too many hints
         else:
-            actual = 0.45   # ️ Average solve
+            actual = 0.15  # very below average solve
     else:
-        actual = 0.0       #  Failed to solve
+        actual = 0.1
+
+    if actual <= 0.3:
+        solved = False
+
 
     print(actual, " actuallll", expected, "expectedddd")
     user_change = round(K * (actual - expected))
 
     # Additional penalty for hints
-    hint_penalty = hints_used * 3
+    hint_penalty = round(hint_efficiency * 5)
+    hint_penalty = min(15, hint_penalty)
     user_change -= hint_penalty
+
 
     print("prior user rating", user.rating)
     user.rating = max(300, user.rating + user_change)
@@ -175,12 +201,14 @@ def submit_puzzle_result():
     user_puzzle = UserPuzzle(
         user_id=user_id,
         puzzle_id=puzzle_id,
+        puzzle_rating=puzzle.rating,
         time_taken=time_taken,
         number_wrong_moves=number_wrong_moves,
         hints_used=hints_used,
         rating=rating_at_attempt,
         solved=solved,
-        user_rating_change=user_change
+        user_rating_change=user_change,
+        random = not is_personalised
     )
 
     db.session.add(user_puzzle)
@@ -192,6 +220,26 @@ def submit_puzzle_result():
         "rating_change": user_change,
         "hint_penalty": hint_penalty
     })
+
+@app.route('/reset_rating', methods=['POST'])
+def reset_rating():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "User not found in session"}), 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User does not exist"}), 400
+
+    # Reset rating to 1000
+    user.rating = 1000
+    db.session.commit()
+
+    print(f"✅ User {user.username} (ID: {user.id}) rating reset to 1000")
+
+    return jsonify({"message": "User rating reset", "new_rating": user.rating})
+
 
 
 # API to validate a move
@@ -210,12 +258,14 @@ def validate_move():
 
 @app.route('/')
 def home():
+    print(f"📌 Connected to: {SQLALCHEMY_DATABASE_URI}")
     return render_template('home.html')
 
 
 # Login screen
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -267,6 +317,12 @@ def signup():
         # Store user details (for now, just redirect)
         return redirect(url_for('login'))  # Redirect to login after signup
     return render_template('signup.html')
+
+@app.route('/debug_users')
+def debug_users():
+    users = User.query.all()
+    return jsonify([{"id": u.id, "username": u.username, "rating": u.rating} for u in users])
+
 
 
 if __name__ == '__main__':

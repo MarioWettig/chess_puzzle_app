@@ -41,6 +41,7 @@ class UserPuzzle(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     puzzle_id = db.Column(db.Integer, db.ForeignKey("puzzles.id"), nullable=False)
+    puzzle_rating = db.Column(db.Integer, nullable=False)
     time_taken = db.Column(db.Integer, nullable=False)  # Time in seconds
     number_wrong_moves = db.Column(db.Integer, default=0, nullable=False)  # Mistakes before solving
     hints_used = db.Column(db.Integer, default=0, nullable=False)
@@ -48,6 +49,7 @@ class UserPuzzle(db.Model):
     solved = db.Column(db.Boolean, default=False)  # If the puzzle was solved correctly
     date_attempted = db.Column(db.DateTime, default=db.func.current_timestamp())  # Timestamp
     user_rating_change = db.Column(db.Integer, default=0, nullable=True)  # Rating adjustment
+    random = db.Column(db.Boolean, default=True, nullable=False) # keep track if it is random or personalised
 
     user = db.relationship("User", backref="solved_puzzles")
     puzzle = db.relationship("Puzzle", backref="attempts")
