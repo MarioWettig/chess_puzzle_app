@@ -282,25 +282,18 @@ def login():
 def index():
     if "user_id" not in session:
         guest_username = f"guest_{random.randint(1000, 9999)}"
-        guest_user = User(
-            username=guest_username,
-            email=None,
-            password="guest",
-            rating=1000
-        )
+        guest_user = User(username=guest_username, email=None, password="guest", rating=1000)
         db.session.add(guest_user)
         db.session.commit()
 
-        session["user_id"] = guest_user.id  # Store guest user ID in session
+        session["user_id"] = guest_user.id  # Store user ID
         session["is_guest"] = True  # Mark as guest
 
         print(f"✅ Guest Created: {guest_user.username} (ID: {guest_user.id})")
-        print(f"📌 Session Data: {session}")  # Check what's stored
 
-    else:
-        print(f"👤 Existing User Session: {session['user_id']}")
+    print(f"📌 Session User ID: {session.get('user_id')}")  # Debugging line
+
     return render_template("chessboard.html")
-
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
