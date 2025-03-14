@@ -26,6 +26,15 @@ migrate = Migrate(app, db)
 import time
 TOTAL_PUZZLES = 4679273
 
+@app.route('/session_debug')
+def session_debug():
+    if "user_id" not in session:
+        session["user_id"] = random.randint(1000, 9999)  # Assign a test ID
+        return jsonify({"message": "New session created", "user_id": session["user_id"]})
+
+    return jsonify({"message": "Session exists", "user_id": session["user_id"]})
+
+
 # Load puzzles from JSON
 def load_random_puzzle():
     print("Loading random puzzle.")
