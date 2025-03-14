@@ -29,6 +29,11 @@ migrate = Migrate(app, db)
 import time
 TOTAL_PUZZLES = 4679273
 
+@app.route("/debug_env")
+def debug_env():
+    import os
+    return f"REDIS_URL = {os.environ.get('REDIS_URL')}"
+
 @app.route('/session_debug')
 def session_debug():
     if "user_id" not in session:
