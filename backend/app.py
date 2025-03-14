@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, render_template, redirect, url_for, s
 import random
 import chess
 import os
+import redis
 from flask_migrate import Migrate
 from flask_session import Session
 
@@ -10,11 +11,13 @@ from backend.models import db, User, Puzzle, UserPuzzle
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.urandom(24)
-app.config['SESSION_TYPE'] = 'filesystem'  # Stores session data in a file instead of cookies
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "fallback_secret_key")
+
+app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_FILE_DIR'] = "./flask_session_data"  # Directory to store sessions
-app.config['SESSION_USE_SIGNER'] = True  # Encrypt session cookies
+app.config['SESSION_USE_SIGNER'] = True  # if you want to sign session cookies
+app.config['SESSION_REDIS'] = redis.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379"))
+
 
 Session(app)
 
