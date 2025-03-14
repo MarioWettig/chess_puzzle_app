@@ -16,6 +16,17 @@ app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "fallback_secret_key")
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True  # if you want to sign session cookies
+
+
+redis_url = os.environ.get("REDIS_URL")
+if not redis_url:
+    raise ValueError("REDIS_URL is not set!")
+
+print(f"Using Redis URL: {redis_url}")  # Debugging
+
+app.config['SESSION_REDIS'] = redis.from_url(redis_url)
+
+
 app.config['SESSION_REDIS'] = redis.from_url(os.environ.get("REDIS_URL"))
 
 
