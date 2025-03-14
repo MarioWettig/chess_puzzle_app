@@ -56,36 +56,37 @@ function stopTimer() {
 }
 
 
-
 function loadPuzzle() {
-     let isPersonalised = localStorage.getItem("personalisation") === "true"; // Read from localStorage
+    let isPersonalised = localStorage.getItem("personalisation") === "true";
     console.log("🔄 Loading puzzle. Personalised:", isPersonalised);
+
+    // Disable Next button to prevent spam-clicking
+    let nextButton = document.querySelector(".button-next");
+    nextButton.disabled = true;
+    nextButton.innerText = "Loading..."; // Optional visual feedback
 
     fetch(`/get_puzzle?personalised=${isPersonalised}`)
         .then(response => response.json())
         .then(data => {
-            //console.log(" Loaded Puzzle:", data);
             if (data.error) {
                 alert("Error loading puzzle: " + data.error);
+                nextButton.disabled = false; // Re-enable on error
+                nextButton.innerText = "Next";
                 return;
             }
 
             let isBlackToMove = data.fen.split(" ")[1] === "b";
             let playerTurn = !isBlackToMove ? "Black" : "White";
-            //console.log(" FEN:", data.fen);
-             console.log(" Rating:", data.rating);
-            // console.log(" Player should play as:", playerTurn);
 
-            // Update the board orientation based on turn
             board = Chessboard('board', {
                 draggable: true,
                 position: data.fen,
                 pieceTheme: '/static/img/chesspieces/{piece}.png',
-                orientation: playerTurn.toLowerCase(), // Flip if Black
+                orientation: playerTurn.toLowerCase(),
                 onDrop: onDrop
             });
 
-            game = new Chess(); // Reset game state
+            game = new Chess();
             game.load(data.fen);
             board.position(data.fen);
             currentSolution = [...data.solution];
@@ -94,29 +95,37 @@ function loadPuzzle() {
             inaccurateMoves = 0;
             hintsUsed = 0;
 
-            // console.log("processed :", currentSolution);
-            // console.log("processed moveHistory :", moveHistory);
-
             let moveCount = currentSolution.length;
             let turnIndicator = document.querySelector('.puzzle-info');
             turnIndicator.innerHTML = `<span style="font-size: 20px; font-weight: bold; color: white;">Play as ${playerTurn}. <b>${Math.ceil(moveCount/2)}</b> best move(s)!</span>`;
 
             document.getElementById('result-message').innerText = "";
-            document.querySelector(".button-next").style.display = "none"; // Hide Next button
+            nextButton.style.display = "none"; // Hide Next button
 
             resetTimer();
-
             setTimeout(() => {
                 applyOpponentMove();
-                //console.log("🔹 Solution After Opponent Move:", currentSolution);
             }, 1200);
 
             startTimer();
         })
         .catch(error => {
-            console.error(" Error fetching puzzle:", error);
+            console.error("❌ Error fetching puzzle:", error);
+            alert("Failed to load puzzle. Please try again.");
+
+            // Ensure button is re-enabled on failure
+            nextButton.disabled = false;
+            nextButton.innerText = "Next";
+        })
+        .finally(() => {
+            // Re-enable button after request completes
+            setTimeout(() => {
+                nextButton.disabled = false;
+                nextButton.innerText = "Next";
+            }, 2000); // Small delay to avoid rapid clicking
         });
 }
+
 
 function applyOpponentMove(){
     if (currentSolution.length > 0) {
@@ -402,7 +411,6 @@ function togglePersonalisation() {
     .then(response => response.json())
     .then(data => {
         console.log("🔄 User rating reset:", data);
-        loadPuzzle();  // Reload puzzle after reset
     })
     .catch(error => console.error("❌ Error resetting rating:", error));
 }

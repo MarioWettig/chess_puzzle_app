@@ -1,11 +1,9 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
-import json
 import random
 import chess
 import os
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from fontTools.misc.cython import returns
+from flask_session import Session
 
 from backend.config import SQLALCHEMY_DATABASE_URI
 from backend.models import db, User, Puzzle, UserPuzzle
@@ -13,6 +11,12 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.urandom(24)
+app.config['SESSION_TYPE'] = 'filesystem'  # Stores session data in a file instead of cookies
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_FILE_DIR'] = "./flask_session_data"  # Directory to store sessions
+app.config['SESSION_USE_SIGNER'] = True  # Encrypt session cookies
+
+Session(app)
 
 
 db.init_app(app)
