@@ -8,30 +8,33 @@ from flask_session import Session
 
 from backend.config import SQLALCHEMY_DATABASE_URI
 from backend.models import db, User, Puzzle, UserPuzzle
+
+# Hardcoded Redis URL (TEMP FIX)
+REDIS_URL = "redis://default:KptkpKcOeTlQDkklQgVbDLSMROtPNoEo@redis.railway.internal:6379"
+
+print(f"🔍 Using Redis URL: {REDIS_URL}")  # Debugging
+
+# Initialize Redis connection
+try:
+    client = redis.Redis.from_url(REDIS_URL)
+    client.ping()
+    print("✅ Successfully connected to Redis!")
+except redis.ConnectionError:
+    print("❌ Failed to connect to Redis!")
+
+# Flask App Configuration
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY", "fallback_secret_key")
 
+# Configure Flask-Session to use Redis
 app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_USE_SIGNER'] = True  # if you want to sign session cookies
-
-
-redis_url = os.environ.get("REDIS_URL")
-if not redis_url:
-    raise ValueError("REDIS_URL is not set!")
-
-print(f"Using Redis URL: {redis_url}")  # Debugging
-
-app.config['SESSION_REDIS'] = redis.from_url(redis_url)
-
-
-app.config['SESSION_REDIS'] = redis.from_url(os.environ.get("REDIS_URL"))
-
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_REDIS'] = redis.from_url(REDIS_URL)  # Use Hardcoded Redis URL
 
 Session(app)
-
 
 db.init_app(app)
 migrate = Migrate(app, db)
