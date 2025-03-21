@@ -127,6 +127,7 @@ def load_personalised_puzzle(user_id):
 
 
 
+
 # API to get a random puzzle
 @app.route('/get_puzzle', methods=['GET'])
 def get_puzzle():
@@ -296,6 +297,13 @@ def home():
     print(f"📌 Connected to: {SQLALCHEMY_DATABASE_URI}")
     return render_template('home.html')
 
+
+@app.route("/get_user_id")
+def get_user_id():
+    if "user_id" in session:
+        return jsonify({"user_id": session["user_id"]})
+    else:
+        return jsonify({"user_id": None})
 
 # Login screen
 @app.route('/login', methods=['GET', 'POST'])

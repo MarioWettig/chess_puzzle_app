@@ -12,7 +12,7 @@ var hintsUsed = 0;
 // not sure how useful the logs are, debugging i guess but they aren't in the terminal lol in the browser! ;)
 
 document.addEventListener("DOMContentLoaded", function () {
-     loadPersonalisationState(); loadPuzzle();
+     loadPersonalisationState(); loadPuzzle(); fetchUserID();
 
      localStorage.setItem("puzzleCounter", "0");
      updatePuzzleCounter();
@@ -34,6 +34,21 @@ function startTimer() {
     }, 1000);
 
 
+}
+
+function fetchUserID() {
+    fetch("/get_user_id")
+        .then(response => response.json())
+        .then(data => {
+            if (data.user_id) {
+                document.getElementById("userIdDisplay").innerText = `User ID: ${data.user_id}`;
+            } else {
+                document.getElementById("userIdDisplay").innerText = "User ID: ???";
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching user ID:", error);
+        });
 }
 
 function updateTimerDisplay() {

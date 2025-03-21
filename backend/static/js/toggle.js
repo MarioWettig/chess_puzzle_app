@@ -14,10 +14,12 @@ function loadPersonalisationState() {
     let toggle = document.getElementById("personalisationToggle");
     let savedState = localStorage.getItem("personalisation");
 
-   if (savedState === null || savedState === "true") {
-        // Force reset to false on first visit
-        localStorage.setItem("personalisation", "false");
-        toggle.checked = false;
+    if (savedState === null) {
+        // Assign random personalisation on first visit
+        let isPersonalised = Math.random() < 0.5; // 50% chance
+        localStorage.setItem("personalisation", isPersonalised ? "true" : "false");
+        toggle.checked = isPersonalised;
+        console.log("🔄 Randomised Personalisation:", isPersonalised);
     } else {
         toggle.checked = savedState === "true";
     }
