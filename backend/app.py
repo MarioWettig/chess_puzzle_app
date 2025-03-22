@@ -96,13 +96,13 @@ def load_personalised_puzzle(user_id):
         user = User.query.get(user_id)
         if not user:
             print("❌ User not found! Using default rating.")
-            user_rating = 1000  # Default rating for unknown users
+            user_rating = 850  # Default rating for unknown users
         else:
             user_rating = user.rating
 
         # Fetch a puzzle within ±100 rating of the user
         puzzle = Puzzle.query.filter(
-            Puzzle.rating.between(user_rating - 70, user_rating + 70)
+            Puzzle.rating.between(user_rating - 100, user_rating + 100)
         ).order_by(db.func.random()).first()
 
         if not puzzle:
