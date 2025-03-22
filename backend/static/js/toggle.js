@@ -23,6 +23,7 @@ function loadPersonalisationState() {
     } else {
         toggle.checked = savedState === "true";
     }
+    togglePersonalisation();
 }
 
 // Call function when the page loads
