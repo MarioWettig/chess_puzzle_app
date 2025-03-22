@@ -435,10 +435,12 @@ function loadPersonalisationState() {
     let toggle = document.getElementById("personalisationToggle");
     let savedState = localStorage.getItem("personalisation");
 
-    if (savedState === null || savedState === "true") {
-        // Force reset to false on first visit
-        localStorage.setItem("personalisation", "false");
-        toggle.checked = false;
+    if (savedState === null) {
+        // First-time visitor — randomise it
+        let isPersonalised = Math.random() < 0.5;
+        localStorage.setItem("personalisation", isPersonalised ? "true" : "false");
+        toggle.checked = isPersonalised;
+        console.log("🎲 Randomised personalisation:", isPersonalised);
     } else {
         toggle.checked = savedState === "true";
     }
