@@ -96,7 +96,7 @@ def load_personalised_puzzle(user_id):
         user = User.query.get(user_id)
         if not user:
             print("❌ User not found! Using default rating.")
-            user_rating = 850  # Default rating for unknown users
+            user_rating = 800  # Default rating for unknown users
         else:
             user_rating = user.rating
 
@@ -269,7 +269,7 @@ def reset_rating():
         return jsonify({"error": "User does not exist"}), 400
 
     # Reset rating to 1000
-    user.rating = 1000
+    user.rating = 800
     db.session.commit()
 
     print(f"✅ User {user.username} (ID: {user.id}) rating reset to 1000")
